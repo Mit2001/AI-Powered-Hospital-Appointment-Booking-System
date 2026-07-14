@@ -1,0 +1,443 @@
+{
+  "name": "AI-Powered Hospital Appointment Booking System Task 2",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Hospital Appointment Booking System",
+        "formDescription": "Please fill out your details below to schedule your medical appointment.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Patient Name"
+            },
+            {
+              "fieldLabel": "Email Address",
+              "fieldType": "email"
+            },
+            {
+              "fieldLabel": "Age",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Phone Number",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Symptoms",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Appointment Date",
+              "fieldType": "date",
+              "fieldName": "current"
+            },
+            {
+              "fieldLabel": "Preferred Time Slot",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "09:00 AM - 10:00 AM"
+                  },
+                  {
+                    "option": "10:00 AM - 11:00 AM"
+                  },
+                  {
+                    "option": "11:00 AM - 12:00 PM"
+                  },
+                  {
+                    "option": "12:00 PM - 01:00 PM"
+                  },
+                  {
+                    "option": "02:00 PM - 03:00 PM"
+                  },
+                  {
+                    "option": "03:00 PM - 04:00 PM"
+                  },
+                  {
+                    "option": "04:00 PM - 05:00 PM"
+                  },
+                  {
+                    "option": "05:00 PM - 06:00 PM"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "116a44b1-ef9d-4850-9a0a-140d01487bca",
+      "name": "On form submission",
+      "webhookId": "d119ef9f-58ef-4535-9963-990d9f031f63"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an intelligent hospital appointment assistant.\n\nAnalyze the patient's symptoms.\n\nReturn ONLY valid JSON.\n\n{\n  \"symptoms\": \"\",\n  \"department\": \"\",\n  \"priority\": \"\",\n  \"doctor_type\": \"\"\n}\n\nSymptoms: {{ $json[\"Symptoms\"] }}\nAge: {{ $json[\"Age\"] }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "273c3f88-ea4f-45b1-9d82-3dc0cf068a56",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        208
+      ],
+      "id": "12435323-10bd-464d-9623-d0ec00cfb752",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "IRoeGDYeiWUintGO",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aaa68c88-9bf2-44e1-9530-bc5cccf5bc7b",
+              "name": "Appointment ID",
+              "value": "={{ \"APT-\" + Date.now() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        704,
+        0
+      ],
+      "id": "801b34b3-e11c-44b8-9a82-77e2fad37a8e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1QVQREO-lVSv3cCnX5EUTyj1ss2y3UQX4HcvEwBUp7t0",
+          "mode": "list",
+          "cachedResultName": "AI-Powered Hospital Appointment Booking System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QVQREO-lVSv3cCnX5EUTyj1ss2y3UQX4HcvEwBUp7t0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QVQREO-lVSv3cCnX5EUTyj1ss2y3UQX4HcvEwBUp7t0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Appointment ID": "={{ $json['Appointment ID'] }}",
+            "Patient Name": "={{ $('On form submission').item.json['Patient Name'] }}",
+            "Email Address": "={{ $('On form submission').item.json['Email Address'] }}",
+            "Age": "={{ $('On form submission').item.json.Age }}",
+            "Phone Number": "={{ $('On form submission').item.json['Phone Number'] }}",
+            "Symptoms": "={{ $('On form submission').item.json.Symptoms }}",
+            "Appointment Date": "={{ $('On form submission').item.json['Appointment Date'] }}",
+            "Preferred Time Slot": "={{ $('On form submission').item.json['Preferred Time Slot'] }}",
+            "submittedAt": "={{ $('On form submission').item.json.submittedAt }}",
+            "formMode": "={{ $('On form submission').item.json.formMode }}",
+            "department": "={{ $json.department }}",
+            "priority": "={{ $json.priority }}",
+            "doctor_type": "={{ $json.doctor_type }}"
+          },
+          "matchingColumns": [
+            "Appointment ID"
+          ],
+          "schema": [
+            {
+              "id": "Appointment ID",
+              "displayName": "Appointment ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Patient Name",
+              "displayName": "Patient Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Age",
+              "displayName": "Age",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Symptoms",
+              "displayName": "Symptoms",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Appointment Date",
+              "displayName": "Appointment Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Preferred Time Slot",
+              "displayName": "Preferred Time Slot",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "department",
+              "displayName": "department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "doctor_type",
+              "displayName": "doctor_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "submittedAt",
+              "displayName": "submittedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "formMode",
+              "displayName": "formMode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        944,
+        0
+      ],
+      "id": "dbc178ee-a139-4fd4-bc76-11f8248ab44f",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Mic9N4vUpKb5ffBS",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = JSON.parse($json.output);\n\nreturn {\n  symptoms: data.symptoms,\n  department: data.department,\n  priority: data.priority,\n  doctor_type: data.doctor_type\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        0
+      ],
+      "id": "c709e519-cb94-4c7f-a82f-748baa82137a",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Email Address'] }}",
+        "subject": "=🏥 Appointment Request Received - {{ $json['Appointment ID'] }}",
+        "message": "=<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden;\">\n\n  <div style=\"background-color: #1976d2; color: white; padding: 20px; text-align: center;\">\n    <h2 style=\"margin: 0;\">🏥 Appointment Request Received</h2>\n  </div>\n\n  <div style=\"padding: 20px; color: #333;\">\n    <p>Hello <strong>{{ $json[\"Patient Name\"] }}</strong>,</p>\n\n```\n<p>\n  Thank you for choosing our hospital. Your appointment request has been successfully received and is currently under review.\n</p>\n\n<div style=\"background-color: #f5f7fa; padding: 15px; border-radius: 8px; margin-top: 20px;\">\n  <h3 style=\"margin-top: 0; color: #1976d2;\">📋 Appointment Details</h3>\n\n  <p><strong>Appointment ID:</strong> {{ $json[\"Appointment ID\"] }}</p>\n  <p><strong>Appointment Date:</strong> {{ $json[\"Appointment Date\"] }}</p>\n  <p><strong>Preferred Time Slot:</strong> {{ $json[\"Preferred Time Slot\"] }}</p>\n</div>\n\n<div style=\"background-color: #fff8e1; padding: 15px; border-radius: 8px; margin-top: 20px;\">\n  <h3 style=\"margin-top: 0; color: #f57c00;\">🩺 Patient Information</h3>\n\n  <p><strong>Symptoms:</strong> {{ $json[\"Symptoms\"] }}</p>\n</div>\n\n<div style=\"background-color: #e8f5e9; padding: 15px; border-radius: 8px; margin-top: 20px;\">\n  <h3 style=\"margin-top: 0; color: #2e7d32;\">🤖 AI Assessment</h3>\n\n  <p><strong>Department:</strong> {{ $json[\"department\"] }}</p>\n  <p><strong>Priority:</strong> {{ $json[\"priority\"] }}</p>\n  <p><strong>Doctor Type:</strong> {{ $json[\"doctor_type\"] }}</p>\n</div>\n\n<p style=\"margin-top: 25px;\">\n  Our medical team will review your request and contact you shortly with confirmation and further instructions.\n</p>\n\n<p>\n  Thank you for trusting us with your healthcare needs.\n</p>\n```\n\n  </div>\n\n  <div style=\"background-color: #f5f5f5; text-align: center; padding: 15px; font-size: 12px; color: #666;\">\n    Hospital Appointment Management System\n  </div>\n\n</div>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1152,
+        0
+      ],
+      "id": "756a61e4-20dd-4a85-9b4b-f697fa1baced",
+      "name": "Send a message",
+      "webhookId": "12467f16-10b2-4528-b185-e0d57af28bba",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "WVdhSA172t7Tk1XZ",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "9218512c-36ab-4376-b89f-e72eaaf628a3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "560a5cee4f50057b77e8f32c6f027966581f9beba8a2c2ec83c54bfc9af8b936"
+  },
+  "nodeGroups": [],
+  "id": "MuwkiCGgXitCfHsx",
+  "tags": []
+}
